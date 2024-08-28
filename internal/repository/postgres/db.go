@@ -1,8 +1,9 @@
-package database
+package postgres
 
 import (
 	"fmt"
 
+	"github.com/quest-be/internal/repository/model"
 	"github.com/quest-be/util"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -39,5 +40,16 @@ func New(log bool) (*Database, error) {
 }
 
 func Setup(db *Database) error {
+	conn := db.Gorm.Begin()
+
+	if err := conn.AutoMigrate(
+		&model.User{},
+	); err != nil {
+		conn.Rollback()
+		return fmt.Errorf("failed to migrate user table: %w", err)
+	}
+	if err := conn.Commit().Error; err != nil {
+		return fmt.Errorf("failed to commit migration: %w", err)
+	}
 	return nil
 }

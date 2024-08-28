@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/quest-be/http"
-	"github.com/quest-be/internal/database"
-	"github.com/quest-be/internal/service"
+	"github.com/quest-be/internal/repository/postgres"
+	"github.com/quest-be/internal/service/router"
 	"github.com/quest-be/util"
 )
 
@@ -14,11 +14,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
-	conn, err := database.New(true)
+	conn, err := postgres.New(true)
 	if err != nil {
 		log.Fatalf("Error connecting to database: %v", err)
 	}
-	router := service.NewRouter(conn)
+	err = postgres.Setup(conn)
+	if err != nil {
+		log.Fatalf("Error setting up database: %v", err)
+	}
+	router := router.NewRouter(conn)
 	server := http.NewHTTP(router)
 	server.Run(util.Default.SERVER_ADDRESS)
 
