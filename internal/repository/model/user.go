@@ -9,8 +9,9 @@ const (
 )
 
 type User struct {
-	Id             int64     `gorm:"primaryKey" json:"id"`
+	Id             uint64    `gorm:"primaryKey" json:"id"`
 	Email          string    `gorm:"uniqueIndex;not null" json:"email"`
 	PassWordHashed string    `json:"-"`
 	LastLoginType  LoginType `gorm:"column:last_login_type;default:PASSWORD" sql:"type:login_type" json:"last_login_type"`
+	IsVerified     bool      `gorm:"default:false" json:"-"`
 }

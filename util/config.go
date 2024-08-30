@@ -9,13 +9,14 @@ type Config struct {
 	PostgresHost     string `mapstructure:"POSTGRES_HOST"`
 	PostgresPort     int    `mapstructure:"POSTGRES_PORT"`
 	SERVER_ADDRESS   string `mapstructure:"SERVER_ADDRESS"`
+	MAIL_PASSWORD    string `mapstructure:"MAIL_PASSWORD"`
 }
 
 var Default Config
 
 func LoadConfig(path string) (err error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigFile(".env")
+	viper.SetConfigFile("../.env")
 
 	viper.AutomaticEnv()
 

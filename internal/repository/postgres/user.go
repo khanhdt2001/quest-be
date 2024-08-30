@@ -35,6 +35,7 @@ func (r *Database) FindUserByEmail(ctx context.Context, email string) (*model.Us
 	}
 	return user, nil
 }
+
 func (r *Database) UpdateUser(ctx context.Context, user *model.User) (*model.User, error) {
 	if err := r.Gorm.Updates(user).Error; err != nil {
 		return nil, err
