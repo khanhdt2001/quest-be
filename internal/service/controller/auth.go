@@ -35,12 +35,6 @@ func (a *AuthController) SignUp(c *gin.Context) {
 }
 
 func (a *AuthController) VerifyUser(c *gin.Context) {
-	// get otp from request
-	// get email from request
-	// get user by email
-	// check if otp is correct
-	// if correct, update user status to active
-	// if not, return error
 	var req dto.VerifyUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -52,4 +46,18 @@ func (a *AuthController) VerifyUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "success"})
+}
+
+func (a *AuthController) SignInByPassword(c *gin.Context) {
+	var req dto.LoginByPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	jwt, err := a.handler.LoginByPassword(c, &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"jwt": jwt})
 }

@@ -9,4 +9,5 @@ var (
 	ErrUserAlreadyVerified = errors.New("user already verified")
 	ErrInvalidOTP          = errors.New("invalid otp")
 	ErrExpiredOTP          = errors.New("otp has expired")
+	ErrUserNotVerified     = errors.New("user not verified")
 )

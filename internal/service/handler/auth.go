@@ -13,7 +13,7 @@ import (
 )
 
 type IAuthHandler interface {
-	LoginByPassword()
+	LoginByPassword(ctx context.Context, req *dto.LoginByPasswordRequest) (string, error)
 	SignUp(ctx context.Context, req *dto.SignUpRequest) error
 	VerifyUser(ctx context.Context, req *dto.VerifyUserRequest) error
 	SetUserHandler(userHandler IUserHandler)
@@ -28,10 +28,6 @@ type AuthHandler struct {
 
 func NewAuthHandler(db *postgres.Database) IAuthHandler {
 	return &AuthHandler{db: db}
-}
-
-func (h *AuthHandler) LoginByPassword() {
-
 }
 
 func (h *AuthHandler) SetUserHandler(userHandler IUserHandler) {
@@ -102,4 +98,29 @@ func (h *AuthHandler) VerifyUser(ctx context.Context, req *dto.VerifyUserRequest
 		return err
 	}
 	return nil
+}
+
+func (h *AuthHandler) LoginByPassword(ctx context.Context, req *dto.LoginByPasswordRequest) (string, error) {
+	// get user by email
+	// check if password is correct
+	// if correct, return jwt token
+	// if not, return error
+	user, err := h.userHander.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		return "", err
+	}
+	if !user.IsVerified {
+		return "", constant.ErrUserNotVerified
+	}
+
+	err = util.CompareHashAndPassword(user.PassWordHashed, req.Password)
+	if err != nil {
+		return "", err
+	}
+
+	token, err := util.CreateToken(user.Id, constant.JWT_EXP_TIME)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }

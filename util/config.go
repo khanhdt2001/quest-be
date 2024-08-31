@@ -16,7 +16,7 @@ var Default Config
 
 func LoadConfig(path string) (err error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigFile("../.env")
+	viper.SetConfigFile(".env")
 
 	viper.AutomaticEnv()
 

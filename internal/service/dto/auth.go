@@ -14,3 +14,4 @@ type VerifyUserRequest struct {
 	Email string `json:"email" validate:"required,email"`
 	OTP   string `json:"otp" validate:"required,min=6,max=6,number"`
 }
+

@@ -23,6 +23,12 @@ func NewRouter(db *postgres.Database) *gin.Engine {
 	authController.SetHandler(authHandler)
 	autherRouter.SetController(authController)
 	autherRouter.Setup(apiRouteGroup.Group("/auth"))
-
+	// setup otp router
+	otpHandler := handler.NewOtpHandler(db)
+	otpController := controller.NewOtpController()
+	otpRouter := NewOtpRouter()
+	otpController.SetHandler(otpHandler)
+	otpRouter.SetController(otpController)
+	otpRouter.Setup(apiRouteGroup.Group("/otp"))
 	return router
 }

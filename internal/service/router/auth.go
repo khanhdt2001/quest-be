@@ -21,4 +21,5 @@ func (a *AuthRouter) Setup(router *gin.RouterGroup) {
 
 	router.POST("/signup", a.controller.SignUp)
 	router.POST("/verify", a.controller.VerifyUser)
+	router.POST("/signin", a.controller.SignInByPassword)
 }

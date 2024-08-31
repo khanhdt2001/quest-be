@@ -10,13 +10,13 @@ import (
 
 type Payload struct {
 	Id        uuid.UUID `json:"id"`
-	Username  string    `json:"username"`
+	UserId    uint64    `json:"user_id"`
 	IssuedAt  time.Time `json:"issued_at"`
 	ExpiredAt time.Time `json:"expired_at"`
 }
 
-func CreateToken(username string, duration time.Duration) (string, error) {
-	payload, err := NewPayload(username, duration)
+func CreateToken(userId uint64, duration time.Duration) (string, error) {
+	payload, err := NewPayload(userId, duration)
 	if err != nil {
 		return "", err
 	}
@@ -28,7 +28,7 @@ func CreateToken(username string, duration time.Duration) (string, error) {
 	return token, nil
 }
 
-func NewPayload(username string, duration time.Duration) (*Payload, error) {
+func NewPayload(userId uint64, duration time.Duration) (*Payload, error) {
 
 	tokenId, err := uuid.NewRandom()
 	if err != nil {
@@ -37,7 +37,7 @@ func NewPayload(username string, duration time.Duration) (*Payload, error) {
 
 	return &Payload{
 		Id:        tokenId,
-		Username:  username,
+		UserId:    userId,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
 	}, nil

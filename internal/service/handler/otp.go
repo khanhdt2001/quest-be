@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/quest-be/constant"
@@ -13,7 +14,7 @@ import (
 type IOtpHandler interface {
 	CreateOtp(ctx context.Context, userId uint64, otp string) error
 	VerifyOtp(ctx context.Context, userId uint64, otp string) error
-	ResendOtp(ctx context.Context, userId uint64) error
+	ResendOtp(ctx context.Context, email string) error
 }
 
 type OtpHandler struct {
@@ -54,8 +55,13 @@ func (o *OtpHandler) VerifyOtp(ctx context.Context, userId uint64, code string) 
 	return nil
 }
 
-func (o *OtpHandler) ResendOtp(ctx context.Context, userId uint64) error {
-	otp, err := o.db.FindOtpByUserId(ctx, userId)
+func (o *OtpHandler) ResendOtp(ctx context.Context, email string) error {
+
+	user, err := o.db.FindUserByEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+	otp, err := o.db.FindOtpByUserId(ctx, user.Id)
 	if err != nil {
 		return err
 	}
@@ -68,5 +74,9 @@ func (o *OtpHandler) ResendOtp(ctx context.Context, userId uint64) error {
 	if err != nil {
 		return err
 	}
+	go util.SendMail(
+		email,
+		constant.WelcomeSubject,
+		fmt.Sprintf(constant.WelcomeBody, otp.OTP))
 	return nil
 }
