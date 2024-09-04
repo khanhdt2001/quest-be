@@ -21,7 +21,7 @@ func CreateToken(userId uint64, duration time.Duration) (string, error) {
 		return "", err
 	}
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-	token, err := jwtToken.SignedString([]byte(constant.JWT_SECRET))
+	token, err := jwtToken.SignedString([]byte(Default.JWT_SECRET))
 	if err != nil {
 		return "", err
 	}

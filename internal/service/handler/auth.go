@@ -124,3 +124,10 @@ func (h *AuthHandler) LoginByPassword(ctx context.Context, req *dto.LoginByPassw
 	}
 	return token, nil
 }
+
+func (h *AuthHandler) LoginByGoogleOauth(ctx context.Context, req *dto.LoginByGoogleOauthRequest) (string, error) {
+	// get user by google token
+	// if user not exist, create user
+	// return jwt
+	return "", nil
+}

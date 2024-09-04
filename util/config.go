@@ -10,6 +10,7 @@ type Config struct {
 	PostgresPort     int    `mapstructure:"POSTGRES_PORT"`
 	SERVER_ADDRESS   string `mapstructure:"SERVER_ADDRESS"`
 	MAIL_PASSWORD    string `mapstructure:"MAIL_PASSWORD"`
+	JWT_SECRET       string `mapsctructure:JWT_SECRET"`
 }
 
 var Default Config

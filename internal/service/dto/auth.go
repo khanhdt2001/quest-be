@@ -15,3 +15,6 @@ type VerifyUserRequest struct {
 	OTP   string `json:"otp" validate:"required,min=6,max=6,number"`
 }
 
+type LoginByGoogleOauthRequest struct {
+	Token string `json:"token" validate:"required"`
+}
