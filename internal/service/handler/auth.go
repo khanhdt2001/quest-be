@@ -1,8 +1,12 @@
 package handler
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/quest-be/constant"
@@ -10,6 +14,9 @@ import (
 	"github.com/quest-be/internal/repository/postgres"
 	"github.com/quest-be/internal/service/dto"
 	"github.com/quest-be/util"
+	"google.golang.org/api/idtoken"
+	"google.golang.org/api/option"
+	"gorm.io/gorm"
 )
 
 type IAuthHandler interface {
@@ -18,6 +25,7 @@ type IAuthHandler interface {
 	VerifyUser(ctx context.Context, req *dto.VerifyUserRequest) error
 	SetUserHandler(userHandler IUserHandler)
 	SetOtpHandler(otpHandler IOtpHandler)
+	LoginByGoogleOauth(ctx context.Context, req *dto.LoginByGoogleRequest) (string, error)
 }
 
 type AuthHandler struct {
@@ -125,9 +133,96 @@ func (h *AuthHandler) LoginByPassword(ctx context.Context, req *dto.LoginByPassw
 	return token, nil
 }
 
-func (h *AuthHandler) LoginByGoogleOauth(ctx context.Context, req *dto.LoginByGoogleOauthRequest) (string, error) {
+func (h *AuthHandler) LoginByGoogleOauth(ctx context.Context, req *dto.LoginByGoogleRequest) (string, error) {
 	// get user by google token
 	// if user not exist, create user
 	// return jwt
+	payload, err := getGoogleCredential(ctx, req.Token)
+	if err != nil {
+		return "", err
+	}
+	email := payload.Claims["email"].(string)
+	user, err := h.userHander.GetUserByEmail(ctx, email)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return "", err
+	}
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		user, err = h.userHander.CreateUser(ctx, dto.CreateUserRequest{
+			Email:         email,
+			LastLoginType: string(model.GOOGLE_OAUTH),
+		})
+		if err != nil {
+			return "", err
+		}
+
+	}
+
+	token, err := util.CreateToken(user.Id, constant.JWT_EXP_TIME)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
+func (h *AuthHandler) LoginByFacebookOauth(ctx context.Context, req *dto.LoginByGoogleRequest) (string, error) {
+	// get user by facebook token
+	// if user not exist, create user
+	// return jwt
 	return "", nil
+}
+
+func getGoogleCredential(ctx context.Context, token string) (*idtoken.Payload, error) {
+	// get google token
+	// return google token
+	oAuthBody := dto.GoogleOAuthBody{
+		Code:         token,
+		ClientId:     util.Default.GOOGLE_CLIENT_ID,
+		ClientSecret: util.Default.GOOGLE_CLIENT_SECRET,
+		GrantType:    "authorization_code",
+		RedirectUri:  "http://localhost:5500/",
+	}
+	var js []byte = nil
+	js, err := json.Marshal(oAuthBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.Post("https://oauth2.googleapis.com/token", "application/json", bytes.NewBuffer(js))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var result interface{}
+	var out dto.OAuthResponse
+	json.NewDecoder(resp.Body).Decode(&result)
+	data, err := json.Marshal(result)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(data, &out)
+	if err != nil {
+		return nil, err
+	}
+	payload, err := verifyGoogleCredential(ctx, out.IdToken)
+	if err != nil {
+		return nil, err
+	}
+	return payload, nil
+}
+
+func verifyGoogleCredential(ctx context.Context, token string) (*idtoken.Payload, error) {
+	// verify google token
+	var client = &http.Client{}
+
+	tokenValidator, err := idtoken.NewValidator(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		return nil, err
+	}
+	payload, err := tokenValidator.Validate(ctx, token, util.Default.GOOGLE_CLIENT_ID)
+
+	if err != nil {
+		return nil, err
+	}
+	return payload, nil
 }

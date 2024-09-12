@@ -61,3 +61,17 @@ func (a *AuthController) SignInByPassword(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"jwt": jwt})
 }
+
+func (a *AuthController) SignInByGoogle(c *gin.Context) {
+	var req dto.LoginByGoogleRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	jwt, err := a.handler.LoginByGoogleOauth(c, &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"jwt": jwt})
+}
