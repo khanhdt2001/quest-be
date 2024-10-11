@@ -45,6 +45,11 @@ func Setup(db *Database) error {
 	if err := conn.AutoMigrate(
 		&model.User{},
 		&model.Otp{},
+		&model.Category{},
+		&model.Level{},
+		&model.Option{},
+		&model.Question{},
+		&model.UserAnswer{},
 	); err != nil {
 		conn.Rollback()
 		return fmt.Errorf("failed to migrate user table: %w", err)

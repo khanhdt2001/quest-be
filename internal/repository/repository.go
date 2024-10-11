@@ -5,4 +5,5 @@ import "github.com/quest-be/internal/repository/postgres"
 type Store interface {
 	postgres.IUserRepository
 	postgres.IOtp
+	postgres.ICategories
 }
